@@ -1,6 +1,8 @@
 package userrepository
 
-import "github.com/mmaxim2710/orders-service/internal/repository/model"
+import (
+	"github.com/mmaxim2710/orders-service/internal/repository/model"
+)
 
 type UserRepository interface {
 	Create(user *model.User) (*model.User, error)
