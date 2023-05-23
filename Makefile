@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	go build -v ./cmd/app
+	go build -v ./cmd/orders-service
 
 .PHONY: test
 test:

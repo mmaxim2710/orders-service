@@ -9,6 +9,12 @@ type userRepository struct {
 	db *gorm.DB
 }
 
+func New(db *gorm.DB) UserRepository {
+	return &userRepository{
+		db: db,
+	}
+}
+
 func (u *userRepository) Create(user *model.User) (*model.User, error) {
 	return nil, nil
 }
