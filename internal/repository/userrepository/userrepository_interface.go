@@ -10,4 +10,5 @@ type UserRepository interface {
 	FindByEmail(user *model.User) (*model.User, error)
 	Update(user *model.User) (*model.User, error)
 	Delete(user *model.User) (*model.User, error)
+	IsUserExists(email string) (bool, error)
 }

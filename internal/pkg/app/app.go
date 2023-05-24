@@ -6,14 +6,13 @@ import (
 	"github.com/mmaxim2710/orders-service/internal/endpoint"
 	"github.com/mmaxim2710/orders-service/internal/pkg/database"
 	"github.com/mmaxim2710/orders-service/internal/pkg/utils"
+	"github.com/mmaxim2710/orders-service/internal/repository/userrepository"
 	"github.com/mmaxim2710/orders-service/internal/server"
 	"github.com/mmaxim2710/orders-service/internal/service"
 )
 
 func New() (*App, error) {
 	a := &App{}
-	a.service = service.New()
-	a.endpoint = endpoint.New(a.service)
 
 	conf, err := config.GetConfig()
 	if err != nil {
@@ -27,9 +26,14 @@ func New() (*App, error) {
 		return nil, err
 	}
 
+	userRepo := userrepository.New(db)
+
+	a.service = service.New(userRepo)
+	a.endpoint = endpoint.New(a.service)
+
 	app := fiber.New()
 
-	s := server.NewServer(app, db, conf)
+	s := server.NewServer(app, conf)
 	a.server = s
 
 	a.SetupHandlers()
@@ -44,4 +48,7 @@ func (a *App) Run() error {
 func (a *App) SetupHandlers() {
 	orders := a.server.App.Group("/api/v1")
 	orders.Get("/ping", a.endpoint.Ping)
+
+	user := a.server.App.Group("/api/v1/user")
+	user.Post("/register")
 }
