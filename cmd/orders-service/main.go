@@ -1,7 +1,8 @@
 package main
 
 import (
-	ordersApp "github.com/mmaxim2710/orders-service/internal/pkg/app"
+	"github.com/mmaxim2710/orders-service/config"
+	"github.com/mmaxim2710/orders-service/internal/app"
 	"github.com/mmaxim2710/orders-service/internal/pkg/utils"
 	"log"
 )
@@ -11,12 +12,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app, err := ordersApp.New()
+	cfg, err := config.GetConfig()
 	if err != nil {
-		log.Fatal(err)
+		utils.Logger.Error(err.Error())
 	}
 
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
+	app.Run(cfg)
 }
