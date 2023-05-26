@@ -6,7 +6,7 @@ import (
 
 type (
 	User interface {
-		RegisterUser(login string, email string, firstName string, lastName string, password string) entity.Response
+		RegisterUser(login string, email string, firstName string, lastName string, password string) (*entity.User, error)
 	}
 
 	UserRepo interface {

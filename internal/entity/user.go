@@ -7,10 +7,10 @@ import (
 
 type User struct {
 	gorm.Model
-	ID        uuid.UUID `json:"uuid" database:"type:uuid;primary_key;"`
-	Login     string    `json:"login" database:"type:varchar(255)"`
-	Email     string    `json:"email" database:"type:varchar(320)"`
-	FirstName string    `json:"first_name" database:"type:varchar(128)"`
-	LastName  string    `json:"last_name" database:"type:varchar(128)"`
-	Password  string    `json:"password" database:"type:varchar(64)"`
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
+	Login     string    `gorm:"type:varchar(255)" json:"login"`
+	Email     string    `gorm:"type:varchar(320)" json:"email"`
+	FirstName string    `gorm:"type:varchar(128)" json:"first_name"`
+	LastName  string    `gorm:"type:varchar(128)" json:"last_name"`
+	Password  string    `gorm:"type:varchar(64)" json:"password"`
 }

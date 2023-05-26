@@ -13,7 +13,7 @@ type DB struct {
 	User     string `env:"DB_USER" envDefault:"postgres"`
 	Password string `env:"DB_PASSWORD"`
 	Name     string `env:"DB_NAME" envDefault:"orders_service_dev"`
-	SSLMode  string `env:"DB_SSLMODE" envDefault:"false"`
+	SSLMode  string `env:"DB_SSLMODE" envDefault:"disable"`
 }
 
 type Server struct {

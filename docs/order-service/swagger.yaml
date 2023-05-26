@@ -1,0 +1,83 @@
+basePath: /v1
+definitions:
+  v1.Response:
+    properties:
+      data: {}
+      error: {}
+      message:
+        type: string
+      status_code:
+        type: integer
+    type: object
+  v1.doRegisterUserRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      first_name:
+        example: Ivan
+        type: string
+      last_name:
+        example: Pupkin
+        type: string
+      login:
+        example: testUser
+        type: string
+      password:
+        example: supersecretpassword
+        type: string
+    type: object
+  v1.registerUserResponse:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      first_name:
+        example: Ivan
+        type: string
+      last_name:
+        example: Pupkin
+        type: string
+      login:
+        example: testUser
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Provides API for ordering
+  title: Orders Service
+  version: "1.0"
+paths:
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with passed params
+      operationId: register-user
+      parameters:
+      - description: Set up user
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.doRegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.registerUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.Response'
+      summary: Register user
+      tags:
+      - users
+swagger: "2.0"
