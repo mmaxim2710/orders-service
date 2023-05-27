@@ -7,6 +7,7 @@ require (
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/gofiber/fiber/v2 v2.46.0
 	github.com/google/uuid v1.3.0
+	github.com/rs/zerolog v1.29.1
 	github.com/swaggo/swag v1.16.1
 	golang.org/x/crypto v0.8.0
 	gorm.io/driver/postgres v1.5.2

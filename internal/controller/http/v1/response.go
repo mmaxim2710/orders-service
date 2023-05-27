@@ -17,3 +17,12 @@ func successResponse(ctx *fiber.Ctx, code int, msg string, data interface{}) err
 		Error:      nil,
 	})
 }
+
+func errorResponse(ctx *fiber.Ctx, code int, msg string, err error) error {
+	return ctx.Status(code).JSON(Response{
+		StatusCode: code,
+		Message:    msg,
+		Data:       nil,
+		Error:      err,
+	})
+}

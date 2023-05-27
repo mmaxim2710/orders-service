@@ -5,7 +5,6 @@ import (
 	"github.com/mmaxim2710/orders-service/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
 var (
@@ -32,7 +31,6 @@ func New(cfg *config.Config) (*gorm.DB, error) {
 	}
 
 	DB = db
-	log.Print(fmt.Sprintf("connected to database %s", cfg.DB.Name))
 
 	return DB, nil
 }

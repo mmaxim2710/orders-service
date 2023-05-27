@@ -5,6 +5,7 @@ import "github.com/caarlos0/env/v8"
 type Config struct {
 	Server Server
 	DB     DB
+	Log    Log
 }
 
 type DB struct {
@@ -14,6 +15,10 @@ type DB struct {
 	Password string `env:"DB_PASSWORD"`
 	Name     string `env:"DB_NAME" envDefault:"orders_service_dev"`
 	SSLMode  string `env:"DB_SSLMODE" envDefault:"disable"`
+}
+
+type Log struct {
+	Level string `env:"LOG_LEVEL" envDefault:"debug"`
 }
 
 type Server struct {

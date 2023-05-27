@@ -8,14 +8,17 @@ import (
 	"github.com/mmaxim2710/orders-service/internal/usecase"
 	"github.com/mmaxim2710/orders-service/internal/usecase/repo"
 	"github.com/mmaxim2710/orders-service/pkg/database"
-	"log"
+	"github.com/mmaxim2710/orders-service/pkg/logger"
 )
 
 func Run(cfg *config.Config) {
+	// Logger
+	l := logger.New(cfg.Log.Level)
+
 	// Repository
 	db, err := database.New(cfg)
 	if err != nil {
-		log.Fatal(fmt.Errorf("app - Run - database.New: %w", err))
+		l.Fatal(fmt.Errorf("app - Run - database.New: %w", err))
 	}
 
 	userRepo := repo.New(db)
@@ -25,9 +28,9 @@ func Run(cfg *config.Config) {
 
 	// HTTP server
 	handler := fiber.New()
-	v1.SetupRouter(handler, userUseCase)
+	v1.SetupRouter(handler, userUseCase, l)
 	err = handler.Listen(cfg.Server.Port)
 	if err != nil {
-		log.Fatal(err)
+		l.Fatal(fmt.Errorf("app - Run - handler.Lister: %w", err))
 	}
 }
