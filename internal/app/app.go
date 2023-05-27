@@ -9,6 +9,7 @@ import (
 	"github.com/mmaxim2710/orders-service/internal/usecase/repo"
 	"github.com/mmaxim2710/orders-service/pkg/database"
 	"github.com/mmaxim2710/orders-service/pkg/logger"
+	"github.com/mmaxim2710/orders-service/pkg/validations"
 )
 
 func Run(cfg *config.Config) {
@@ -21,10 +22,13 @@ func Run(cfg *config.Config) {
 		l.Fatal(fmt.Errorf("app - Run - database.New: %w", err))
 	}
 
-	userRepo := repo.New(db)
+	userRepo := repo.New(db, l)
 
 	// Use case
 	userUseCase := usecase.New(userRepo)
+
+	// Validator
+	validations.InitValidator()
 
 	// HTTP server
 	handler := fiber.New()

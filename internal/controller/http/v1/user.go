@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/mmaxim2710/orders-service/internal/usecase"
 	"github.com/mmaxim2710/orders-service/pkg/logger"
+	"github.com/mmaxim2710/orders-service/pkg/validations"
 )
 
 type userRoutes struct {
@@ -25,11 +27,11 @@ func newUserRoutes(handler fiber.Router, u usecase.User, l logger.Interface) {
 }
 
 type doRegisterUserRequest struct {
-	Login     string `json:"login" example:"testUser"`
-	Email     string `json:"email" example:"user@example.com"`
-	FirstName string `json:"first_name" example:"Ivan"`
-	LastName  string `json:"last_name" example:"Pupkin"`
-	Password  string `json:"password" example:"supersecretpassword"`
+	Login     string `json:"login" example:"testUser" validate:"required,min=3,max=255"`
+	Email     string `json:"email" example:"user@example.com" validate:"required,email"`
+	FirstName string `json:"first_name" example:"Ivan" validate:"required,min=2,max=128"`
+	LastName  string `json:"last_name" example:"Pupkin" validate:"required,min=2,max=128"`
+	Password  string `json:"password" example:"supersecretpassword" validate:"required,min=8,max=64"`
 }
 
 type registerUserResponse struct {
@@ -59,9 +61,15 @@ func (r *userRoutes) registerUser(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid request body", err)
 	}
 
+	ok, errs := validations.UniversalValidation(request)
+	if !ok {
+		r.l.Error(errors.New("validation failed"), "http - v1 - registerUser")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
+	}
+
 	user, err := r.u.RegisterUser(request.Login, request.Email, request.FirstName, request.LastName, request.Password)
 	if err != nil {
-		r.l.Error(err, "http - v1 - registerUser")
+		r.l.Error(err, "")
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Error while register user", err)
 	}
 
