@@ -7,7 +7,9 @@ require (
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/go-playground/validator/v10 v10.14.0
 	github.com/gofiber/fiber/v2 v2.46.0
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.0
+	github.com/matoous/go-nanoid/v2 v2.0.0
 	github.com/rs/zerolog v1.29.1
 	github.com/swaggo/swag v1.16.1
 	golang.org/x/crypto v0.8.0

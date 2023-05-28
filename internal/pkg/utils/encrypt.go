@@ -10,3 +10,14 @@ func EncryptString(s string) (string, error) {
 
 	return string(b), nil
 }
+
+func ComparePassword(hashPassword string, inputPassword string) bool {
+	byteHash := []byte(hashPassword)
+	byteInput := []byte(inputPassword)
+
+	if err := bcrypt.CompareHashAndPassword(byteHash, byteInput); err != nil {
+		return false
+	}
+
+	return true
+}

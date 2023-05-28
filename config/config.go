@@ -6,6 +6,7 @@ type Config struct {
 	Server Server
 	DB     DB
 	Log    Log
+	JWT    JWT
 }
 
 type DB struct {
@@ -23,6 +24,11 @@ type Log struct {
 
 type Server struct {
 	Port string `env:"SERVER_PORT" envDefault:":3000"`
+}
+
+type JWT struct {
+	Secret      string `env:"JWT_SECRET"`
+	ExpireHours string `env:"JWT_EXPIRE_HOURS" envDefault:"24"`
 }
 
 func GetConfig() (*Config, error) {

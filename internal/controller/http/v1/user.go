@@ -23,6 +23,8 @@ func newUserRoutes(handler fiber.Router, u usecase.User, l logger.Interface) {
 	h := handler.Group("/user")
 	{
 		h.Post("/register", r.registerUser)
+		h.Post("/login", r.login)
+		h.Post("/refresh", r.refresh)
 	}
 }
 
@@ -54,7 +56,7 @@ type registerUserResponse struct {
 // @Failure     500 {object} Response
 // @Router      /user/register [post]
 func (r *userRoutes) registerUser(ctx *fiber.Ctx) error {
-	request := &doRegisterUserRequest{}
+	request := doRegisterUserRequest{}
 	err := ctx.BodyParser(&request)
 	if err != nil {
 		r.l.Error(err, "http - v1 - registerUser")
@@ -69,7 +71,10 @@ func (r *userRoutes) registerUser(ctx *fiber.Ctx) error {
 
 	user, err := r.u.RegisterUser(request.Login, request.Email, request.FirstName, request.LastName, request.Password)
 	if err != nil {
-		r.l.Error(err, "")
+		r.l.Error(err)
+		if err == usecase.ErrUserExists {
+			return errorResponse(ctx, fiber.StatusBadRequest, "User with provided email is exists", err)
+		}
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Error while register user", err)
 	}
 
@@ -82,4 +87,59 @@ func (r *userRoutes) registerUser(ctx *fiber.Ctx) error {
 	}
 
 	return successResponse(ctx, fiber.StatusOK, "Successfully registered user", response)
+}
+
+type doLoginRequest struct {
+	Email    string `json:"email" example:"user@example.com" validate:"required,email"`
+	Password string `json:"password" example:"supersecretpassword" validate:"required,min=8,max=64"`
+}
+
+func (r *userRoutes) login(ctx *fiber.Ctx) error {
+	request := doLoginRequest{}
+	err := ctx.BodyParser(&request)
+	if err != nil {
+		r.l.Error(err, "http - v1 - login")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid request body", err)
+	}
+
+	ok, errs := validations.UniversalValidation(request)
+	if !ok {
+		r.l.Error(errors.New("validation failed"), "http - v1 - login")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
+	}
+
+	result, err := r.u.Login(request.Email, request.Password)
+	if err != nil {
+		r.l.Error(err, "http - v1 - login")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Login failed", err)
+	}
+
+	return successResponse(ctx, fiber.StatusOK, "Login success", result)
+}
+
+type doRefreshRequest struct {
+	UserID       string `json:"user_id" validate:"required,uuid"`
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}
+
+func (r *userRoutes) refresh(ctx *fiber.Ctx) error {
+	request := doRefreshRequest{}
+	err := ctx.BodyParser(&request)
+	if err != nil {
+		r.l.Error(err, "http - v1 - refresh")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid request body", err)
+	}
+
+	ok, errs := validations.UniversalValidation(request)
+	if !ok {
+		r.l.Error(errors.New("validation failed"), "http - v1 - refresh")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
+	}
+
+	result, err := r.u.Refresh(request.RefreshToken, request.UserID)
+	if err != nil {
+		r.l.Error(err, "http - v1 - refresh")
+		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
+	}
+	return successResponse(ctx, fiber.StatusOK, "Successful refresh", result)
 }

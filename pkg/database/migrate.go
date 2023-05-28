@@ -10,5 +10,9 @@ func Automigrate(db *gorm.DB) error {
 		return err
 	}
 
+	if err := db.AutoMigrate(&entity.Token{}); err != nil {
+		return err
+	}
+
 	return nil
 }

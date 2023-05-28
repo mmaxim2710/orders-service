@@ -11,7 +11,7 @@ type UserRepository struct {
 	l  logger.Interface
 }
 
-func New(db *gorm.DB, l logger.Interface) *UserRepository {
+func NewUserRepository(db *gorm.DB, l logger.Interface) *UserRepository {
 	return &UserRepository{
 		db: db,
 		l:  l,
@@ -23,12 +23,16 @@ func (u *UserRepository) Create(user *entity.User) (*entity.User, error) {
 	return user, u.db.Create(&user).Error
 }
 
-func (u *UserRepository) FindByID(user *entity.User) (*entity.User, error) {
-	return nil, nil
+func (u *UserRepository) FindByID(id string) (*entity.User, error) {
+	var user entity.User
+	err := u.db.Where("id = ?", id).First(&user).Error
+	return &user, err
 }
 
-func (u *UserRepository) FindByEmail(user *entity.User) (*entity.User, error) {
-	return nil, nil
+func (u *UserRepository) FindByEmail(email string) (*entity.User, error) {
+	var user entity.User
+	err := u.db.Where("email = ?", email).First(&user).Error
+	return &user, err
 }
 
 func (u *UserRepository) Update(user *entity.User) (*entity.User, error) {
