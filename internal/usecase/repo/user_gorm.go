@@ -36,7 +36,12 @@ func (u *UserRepository) FindByEmail(email string) (*entity.User, error) {
 }
 
 func (u *UserRepository) Update(user *entity.User) (*entity.User, error) {
-	return nil, nil
+	var newUser entity.User
+	err := u.db.Model(&entity.User{}).
+		Where("id = ?", user.ID).
+		Updates(user).
+		First(&newUser).Error
+	return &newUser, err
 }
 
 func (u *UserRepository) Delete(user *entity.User) (*entity.User, error) {

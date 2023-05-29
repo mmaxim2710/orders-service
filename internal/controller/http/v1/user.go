@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/mmaxim2710/orders-service/internal/usecase"
@@ -25,6 +24,7 @@ func newUserRoutes(handler fiber.Router, u usecase.User, l logger.Interface) {
 		h.Post("/register", r.registerUser)
 		h.Post("/login", r.login)
 		h.Post("/refresh", r.refresh)
+		h.Post("/update", r.update)
 	}
 }
 
@@ -65,7 +65,7 @@ func (r *userRoutes) registerUser(ctx *fiber.Ctx) error {
 
 	ok, errs := validations.UniversalValidation(request)
 	if !ok {
-		r.l.Error(errors.New("validation failed"), "http - v1 - registerUser")
+		r.l.Error(ErrValidationFailed, "http - v1 - registerUser")
 		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
 	}
 
@@ -104,7 +104,7 @@ func (r *userRoutes) login(ctx *fiber.Ctx) error {
 
 	ok, errs := validations.UniversalValidation(request)
 	if !ok {
-		r.l.Error(errors.New("validation failed"), "http - v1 - login")
+		r.l.Error(ErrValidationFailed, "http - v1 - login")
 		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
 	}
 
@@ -132,7 +132,7 @@ func (r *userRoutes) refresh(ctx *fiber.Ctx) error {
 
 	ok, errs := validations.UniversalValidation(request)
 	if !ok {
-		r.l.Error(errors.New("validation failed"), "http - v1 - refresh")
+		r.l.Error(ErrValidationFailed, "http - v1 - refresh")
 		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
 	}
 
@@ -142,4 +142,52 @@ func (r *userRoutes) refresh(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
 	return successResponse(ctx, fiber.StatusOK, "Successful refresh", result)
+}
+
+type doUpdateRequest struct {
+	UserID    string `json:"user_id" validation:"required"`
+	Email     string `json:"email" validation:"required,email"`
+	FirstName string `json:"first_name" validation:"required,min=2,max=128"`
+	LastName  string `json:"last_name" validation:"required,min=2,max=128"`
+}
+
+type updateResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Login     string    `json:"login"`
+	Email     string    `json:"email"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+}
+
+func (r *userRoutes) update(ctx *fiber.Ctx) error {
+	request := doUpdateRequest{}
+	err := ctx.BodyParser(&request)
+	if err != nil {
+		r.l.Error(err, "http - v1 - refresh")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid request body", err)
+	}
+
+	ok, errs := validations.UniversalValidation(request)
+	if !ok {
+		r.l.Error(ErrValidationFailed, "http - v1 - refresh")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
+	}
+
+	newUser, err := r.u.Update(uuid.MustParse(request.UserID), request.Email, request.FirstName, request.LastName)
+	if err != nil {
+		r.l.Error(err, "http - v1 - refresh")
+		if err == usecase.ErrUserExists {
+			return errorResponse(ctx, fiber.StatusBadRequest, "User with provided email is exists", err)
+		}
+		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
+	}
+
+	response := &updateResponse{
+		ID:        newUser.ID,
+		Login:     newUser.Login,
+		Email:     newUser.Email,
+		FirstName: newUser.FirstName,
+		LastName:  newUser.LastName,
+	}
+	return successResponse(ctx, fiber.StatusOK, "Successful update", response)
 }

@@ -10,6 +10,7 @@ type (
 		RegisterUser(login string, email string, firstName string, lastName string, password string) (*entity.User, error)
 		Login(email string, password string) (map[string]interface{}, error)
 		Refresh(token string, userID string) (map[string]interface{}, error)
+		Update(userID uuid.UUID, email string, firstName string, lastName string) (*entity.User, error)
 	}
 
 	UserRepo interface {

@@ -130,3 +130,27 @@ func (u UserUseCase) Refresh(token string, userID string) (map[string]interface{
 		"exp":           exp,
 	}, nil
 }
+
+func (u UserUseCase) Update(userID uuid.UUID, email string, firstName string, lastName string) (*entity.User, error) {
+	isExist, err := u.userRepo.IsUserExists(email)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if isExist {
+		return nil, ErrUserExists
+	}
+
+	newUser := &entity.User{
+		ID:        userID,
+		Email:     email,
+		FirstName: firstName,
+		LastName:  lastName,
+	}
+
+	updatedUser, err := u.userRepo.Update(newUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedUser, nil
+}
