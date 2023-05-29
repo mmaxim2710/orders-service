@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/mmaxim2710/orders-service/internal/controller/http/v1/middleware"
 	"github.com/mmaxim2710/orders-service/internal/usecase"
 	"github.com/mmaxim2710/orders-service/pkg/logger"
 	"github.com/mmaxim2710/orders-service/pkg/validations"
@@ -24,7 +25,7 @@ func newUserRoutes(handler fiber.Router, u usecase.User, l logger.Interface) {
 		h.Post("/register", r.registerUser)
 		h.Post("/login", r.login)
 		h.Post("/refresh", r.refresh)
-		h.Post("/update", r.update)
+		h.Post("/update", middleware.Protected(), r.update)
 	}
 }
 
