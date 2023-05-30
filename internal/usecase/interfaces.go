@@ -21,10 +21,24 @@ type (
 		Delete(user *entity.User) (*entity.User, error)
 		IsUserExists(email string) (bool, error)
 	}
+)
 
+type (
 	TokenRepo interface {
 		Create(userID uuid.UUID, token string) error
 		GetActiveToken(userID uuid.UUID) (entity.Token, error)
 		Revoke(userID uuid.UUID) error
+	}
+)
+
+type (
+	Service interface {
+		Create(userID uuid.UUID, title string, description string, price float64) (*entity.Service, error)
+	}
+	ServiceRepo interface {
+		Create(service *entity.Service) (*entity.Service, error)
+		Update(service *entity.Service) (*entity.Service, error)
+		Delete(service *entity.Service) (*entity.Service, error)
+		GetServicesByUserId(userID uuid.UUID) (*entity.Service, error)
 	}
 )

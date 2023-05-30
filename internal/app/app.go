@@ -26,9 +26,11 @@ func Run(cfg *config.Config) {
 
 	userRepo := repo.NewUserRepository(db, l)
 	tokenRepo := repo.NewTokenRepository(db)
+	serviceRepo := repo.NewServiceRepo(db, l)
 
 	// Use case
-	userUseCase := usecase.New(userRepo, tokenRepo)
+	userUseCase := usecase.NewUserUseCase(userRepo, tokenRepo)
+	serviceUseCase := usecase.NewServiceUseCase(serviceRepo)
 
 	// Validator
 	validations.InitValidator()
@@ -38,7 +40,7 @@ func Run(cfg *config.Config) {
 
 	// HTTP server
 	handler := fiber.New()
-	v1.SetupRouter(handler, userUseCase, l)
+	v1.SetupRouter(handler, userUseCase, serviceUseCase, l)
 	err = handler.Listen(cfg.Server.Port)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - handler.Lister: %w", err))

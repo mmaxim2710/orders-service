@@ -10,6 +10,7 @@ func Protected() func(ctx *fiber.Ctx) error {
 	return jwtware.New(jwtware.Config{
 		SigningKey:   utils.JwtSignatureKey,
 		ErrorHandler: jwtError,
+		ContextKey:   "jwt",
 	})
 }
 

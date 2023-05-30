@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/mmaxim2710/orders-service/internal/controller/http/v1/middleware"
 	"github.com/mmaxim2710/orders-service/internal/usecase"
@@ -146,35 +147,43 @@ func (r *userRoutes) refresh(ctx *fiber.Ctx) error {
 }
 
 type doUpdateRequest struct {
-	UserID    string `json:"user_id" validation:"required"`
 	Email     string `json:"email" validation:"required,email"`
 	FirstName string `json:"first_name" validation:"required,min=2,max=128"`
 	LastName  string `json:"last_name" validation:"required,min=2,max=128"`
 }
 
 type updateResponse struct {
-	ID        uuid.UUID `json:"id"`
-	Login     string    `json:"login"`
-	Email     string    `json:"email"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
+	Login     string `json:"login"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 }
 
 func (r *userRoutes) update(ctx *fiber.Ctx) error {
 	request := doUpdateRequest{}
 	err := ctx.BodyParser(&request)
 	if err != nil {
-		r.l.Error(err, "http - v1 - refresh")
+		r.l.Error(err, "http - v1 - update")
 		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid request body", err)
 	}
 
 	ok, errs := validations.UniversalValidation(request)
 	if !ok {
-		r.l.Error(ErrValidationFailed, "http - v1 - refresh")
+		r.l.Error(ErrValidationFailed, "http - v1 - update")
 		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
 	}
 
-	newUser, err := r.u.Update(uuid.MustParse(request.UserID), request.Email, request.FirstName, request.LastName)
+	jwtData := ctx.Locals("jwt").(*jwt.Token)
+	claims := jwtData.Claims.(jwt.MapClaims)
+	id := claims["id"].(string)
+
+	userID, err := uuid.Parse(id)
+	if err != nil {
+		r.l.Error(err, "http - v1 - update")
+		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
+	}
+
+	newUser, err := r.u.Update(userID, request.Email, request.FirstName, request.LastName)
 	if err != nil {
 		r.l.Error(err, "http - v1 - refresh")
 		if err == usecase.ErrUserExists {
@@ -184,7 +193,6 @@ func (r *userRoutes) update(ctx *fiber.Ctx) error {
 	}
 
 	response := &updateResponse{
-		ID:        newUser.ID,
 		Login:     newUser.Login,
 		Email:     newUser.Email,
 		FirstName: newUser.FirstName,
