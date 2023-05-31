@@ -1,4 +1,4 @@
-package repo
+package gormrepo
 
 import (
 	"github.com/google/uuid"
@@ -20,6 +20,8 @@ func NewServiceRepo(db *gorm.DB, l logger.Interface) *ServiceRepository {
 }
 
 func (s *ServiceRepository) Create(service *entity.Service) (*entity.Service, error) {
+	s.l.Info("serviceRepo - Create: Creating new service: title=%s, desc=%s, price=%f",
+		service.Title, service.Description, service.Price)
 	newService := &entity.Service{}
 	err := s.db.Model(&entity.Service{}).
 		Create(&service).

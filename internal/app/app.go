@@ -8,7 +8,7 @@ import (
 	v1 "github.com/mmaxim2710/orders-service/internal/controller/http/v1"
 	"github.com/mmaxim2710/orders-service/internal/pkg/utils"
 	"github.com/mmaxim2710/orders-service/internal/usecase"
-	"github.com/mmaxim2710/orders-service/internal/usecase/repo"
+	"github.com/mmaxim2710/orders-service/internal/usecase/repo/gormrepo"
 	"github.com/mmaxim2710/orders-service/pkg/database"
 	"github.com/mmaxim2710/orders-service/pkg/logger"
 	"github.com/mmaxim2710/orders-service/pkg/validations"
@@ -24,9 +24,9 @@ func Run(cfg *config.Config) {
 		l.Fatal(fmt.Errorf("app - Run - database.NewUserRepository: %w", err))
 	}
 
-	userRepo := repo.NewUserRepository(db, l)
-	tokenRepo := repo.NewTokenRepository(db)
-	serviceRepo := repo.NewServiceRepo(db, l)
+	userRepo := gormrepo.NewUserRepository(db, l)
+	tokenRepo := gormrepo.NewTokenRepository(db, l)
+	serviceRepo := gormrepo.NewServiceRepo(db, l)
 
 	// Use case
 	userUseCase := usecase.NewUserUseCase(userRepo, tokenRepo)

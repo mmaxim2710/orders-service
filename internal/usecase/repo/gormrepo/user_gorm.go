@@ -1,4 +1,4 @@
-package repo
+package gormrepo
 
 import (
 	"github.com/mmaxim2710/orders-service/internal/entity"
@@ -24,18 +24,21 @@ func (u *UserRepository) Create(user *entity.User) (*entity.User, error) {
 }
 
 func (u *UserRepository) FindByID(id string) (*entity.User, error) {
+	u.l.Info("userRepo - FindByID: Finding user by id %s", id)
 	var user entity.User
 	err := u.db.Where("id = ?", id).First(&user).Error
 	return &user, err
 }
 
 func (u *UserRepository) FindByEmail(email string) (*entity.User, error) {
+	u.l.Info("userRepo - FindByEmail: Finding user by email %s", email)
 	var user entity.User
 	err := u.db.Where("email = ?", email).First(&user).Error
 	return &user, err
 }
 
 func (u *UserRepository) Update(user *entity.User) (*entity.User, error) {
+	u.l.Info("userRepo - Update: Updating user %v", user.ID)
 	var newUser entity.User
 	err := u.db.Model(&entity.User{}).
 		Where("id = ?", user.ID).
@@ -49,6 +52,7 @@ func (u *UserRepository) Delete(user *entity.User) (*entity.User, error) {
 }
 
 func (u *UserRepository) IsUserExists(email string) (bool, error) {
+	u.l.Info("userRepo - IsUserExists: Checking if user with email %s is exists", email)
 	var count int64
 	err := u.db.Model(&entity.User{}).Where("email = ?", email).Count(&count).Error
 	if err != nil {

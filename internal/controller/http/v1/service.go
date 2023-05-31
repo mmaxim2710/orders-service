@@ -28,9 +28,9 @@ func newServiceRoutes(handler fiber.Router, s usecase.Service, l logger.Interfac
 }
 
 type doCreateServiceRequest struct {
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
+	Title       string  `json:"title" validate:"required,min=3,max=128"`
+	Description string  `json:"description" validate:"required,min=1,max=1024"`
+	Price       float64 `json:"price" validate:"required,min=0"`
 }
 
 type createServiceResponse struct {
