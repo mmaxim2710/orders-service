@@ -19,7 +19,7 @@ func NewUserUseCase(u UserRepo, t TokenRepo) *UserUseCase {
 	}
 }
 
-func (u UserUseCase) RegisterUser(login string, email string, firstName string, lastName string, password string) (*entity.User, error) {
+func (u *UserUseCase) RegisterUser(login string, email string, firstName string, lastName string, password string) (*entity.User, error) {
 	isUserExists, err := u.userRepo.IsUserExistsByEmail(email)
 	if isUserExists {
 		return nil, ErrUserExists
@@ -41,7 +41,7 @@ func (u UserUseCase) RegisterUser(login string, email string, firstName string, 
 	return u.userRepo.Create(user)
 }
 
-func (u UserUseCase) Login(email string, password string) (map[string]interface{}, error) {
+func (u *UserUseCase) Login(email string, password string) (map[string]interface{}, error) {
 	isExist, err := u.userRepo.IsUserExistsByEmail(email)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -92,7 +92,7 @@ func (u UserUseCase) Login(email string, password string) (map[string]interface{
 	}, nil
 }
 
-func (u UserUseCase) Refresh(token string, userID string) (map[string]interface{}, error) {
+func (u *UserUseCase) Refresh(token string, userID string) (map[string]interface{}, error) {
 	rt, err := u.tokenRepo.GetActiveToken(uuid.MustParse(userID))
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -131,7 +131,7 @@ func (u UserUseCase) Refresh(token string, userID string) (map[string]interface{
 	}, nil
 }
 
-func (u UserUseCase) Update(userID uuid.UUID, email string, firstName string, lastName string) (*entity.User, error) {
+func (u *UserUseCase) Update(userID uuid.UUID, email string, firstName string, lastName string) (*entity.User, error) {
 	isExist, err := u.userRepo.IsUserExistsByEmail(email)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err

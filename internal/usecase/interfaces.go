@@ -38,11 +38,13 @@ type (
 		Update(serviceID uuid.UUID, title string, description string, price float64, isClosed bool) (*entity.Service, error)
 		GetByID(serviceID uuid.UUID) (*entity.Service, error)
 		GetByUserID(userID uuid.UUID) ([]entity.Service, error)
+		Delete(serviceID uuid.UUID) (*entity.Service, error)
 	}
+
 	ServiceRepo interface {
 		Create(service *entity.Service) (*entity.Service, error)
 		Update(service *entity.Service) (*entity.Service, error)
-		Delete(service *entity.Service) (*entity.Service, error)
+		Delete(serviceID uuid.UUID) (*entity.Service, error)
 		IsServiceExists(serviceID uuid.UUID) (bool, error)
 		GetServiceByID(userID uuid.UUID) (*entity.Service, error)
 		GetServicesByUserID(userID uuid.UUID) ([]entity.Service, error)

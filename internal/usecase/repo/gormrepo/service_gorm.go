@@ -40,8 +40,13 @@ func (s *ServiceRepository) Update(service *entity.Service) (*entity.Service, er
 	return &newService, err
 }
 
-func (s *ServiceRepository) Delete(service *entity.Service) (*entity.Service, error) {
-	return nil, nil
+func (s *ServiceRepository) Delete(serviceID uuid.UUID) (*entity.Service, error) {
+	var delService entity.Service
+	err := s.db.Model(&entity.Service{}).
+		Where("id = ?", serviceID).
+		First(&delService).
+		Delete(&entity.Service{}).Error
+	return &delService, err
 }
 
 func (s *ServiceRepository) IsServiceExists(serviceID uuid.UUID) (bool, error) {

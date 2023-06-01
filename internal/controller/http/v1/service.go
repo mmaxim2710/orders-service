@@ -21,12 +21,13 @@ func newServiceRoutes(handler fiber.Router, s usecase.Service, l logger.Interfac
 		l: l,
 	}
 
-	h := handler.Group("/services")
+	h := handler.Group("/services", middleware.Protected())
 	{
-		h.Post("", middleware.Protected(), r.createService)
-		h.Patch("", middleware.Protected(), r.updateService)
-		h.Get("/:serviceID", middleware.Protected(), r.serviceByID)
-		h.Get("", middleware.Protected(), r.servicesByUserID)
+		h.Post("", r.createService)
+		h.Patch("", r.updateService)
+		h.Get("/:serviceID", r.serviceByID)
+		h.Get("", r.servicesByUserID)
+		h.Delete("", r.deleteService)
 	}
 }
 
@@ -43,6 +44,10 @@ type (
 		Description string  `json:"description" validate:"required,min=1,max=1024"`
 		Price       float64 `json:"price" validate:"required,min=0"`
 		IsClosed    bool    `json:"is_closed" validate:"required"`
+	}
+
+	doDeleteServiceRequest struct {
+		ID string `json:"id" validate:"required"`
 	}
 
 	serviceResponse struct {
@@ -195,4 +200,44 @@ func (r *serviceRoutes) servicesByUserID(ctx *fiber.Ctx) error {
 	}
 
 	return successResponse(ctx, fiber.StatusOK, "Successful get services", respServices)
+}
+
+func (r *serviceRoutes) deleteService(ctx *fiber.Ctx) error {
+	request := doDeleteServiceRequest{}
+	err := ctx.BodyParser(&request)
+	if err != nil {
+		r.l.Error(err, "http - v1 - service - delete")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid request body", err)
+	}
+
+	ok, errs := validations.UniversalValidation(&request)
+	if !ok {
+		r.l.Error(errs, "http - v1 - service - delete")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Validation failed", errs)
+	}
+
+	serviceID, err := uuid.Parse(request.ID)
+	if err != nil {
+		r.l.Error(err, "http - v1 - service - delete")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid uuid", err)
+	}
+
+	delService, err := r.s.Delete(serviceID)
+	if err != nil {
+		r.l.Error(err, "http - v1 - service - delete")
+		if err == usecase.ErrServiceNotExists {
+			return errorResponse(ctx, fiber.StatusBadRequest, "Service with provided id not exists", err)
+		}
+		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
+	}
+
+	response := serviceResponse{
+		ID:          delService.ID,
+		Title:       delService.Title,
+		Description: delService.Description,
+		Price:       delService.Price,
+		IsClosed:    delService.IsClosed,
+	}
+
+	return successResponse(ctx, fiber.StatusOK, "Successful delete", response)
 }

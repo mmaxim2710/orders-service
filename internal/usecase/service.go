@@ -75,3 +75,15 @@ func (s *ServiceUseCase) GetByUserID(userID uuid.UUID) ([]entity.Service, error)
 
 	return s.serviceRepo.GetServicesByUserID(userID)
 }
+
+func (s *ServiceUseCase) Delete(serviceID uuid.UUID) (*entity.Service, error) {
+	isExists, err := s.serviceRepo.IsServiceExists(serviceID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if !isExists {
+		return nil, ErrServiceNotExists
+	}
+
+	return s.serviceRepo.Delete(serviceID)
+}
