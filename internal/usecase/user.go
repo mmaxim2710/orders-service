@@ -20,7 +20,7 @@ func NewUserUseCase(u UserRepo, t TokenRepo) *UserUseCase {
 }
 
 func (u UserUseCase) RegisterUser(login string, email string, firstName string, lastName string, password string) (*entity.User, error) {
-	isUserExists, err := u.userRepo.IsUserExists(email)
+	isUserExists, err := u.userRepo.IsUserExistsByEmail(email)
 	if isUserExists {
 		return nil, ErrUserExists
 	}
@@ -42,7 +42,7 @@ func (u UserUseCase) RegisterUser(login string, email string, firstName string, 
 }
 
 func (u UserUseCase) Login(email string, password string) (map[string]interface{}, error) {
-	isExist, err := u.userRepo.IsUserExists(email)
+	isExist, err := u.userRepo.IsUserExistsByEmail(email)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (u UserUseCase) Refresh(token string, userID string) (map[string]interface{
 }
 
 func (u UserUseCase) Update(userID uuid.UUID, email string, firstName string, lastName string) (*entity.User, error) {
-	isExist, err := u.userRepo.IsUserExists(email)
+	isExist, err := u.userRepo.IsUserExistsByEmail(email)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

@@ -8,11 +8,13 @@ import (
 
 type ServiceUseCase struct {
 	serviceRepo ServiceRepo
+	userRepo    UserRepo
 }
 
-func NewServiceUseCase(repo ServiceRepo) *ServiceUseCase {
+func NewServiceUseCase(serviceRepo ServiceRepo, userRepo UserRepo) *ServiceUseCase {
 	return &ServiceUseCase{
-		serviceRepo: repo,
+		serviceRepo: serviceRepo,
+		userRepo:    userRepo,
 	}
 }
 
@@ -60,4 +62,16 @@ func (s *ServiceUseCase) GetByID(serviceID uuid.UUID) (*entity.Service, error) {
 	}
 
 	return s.serviceRepo.GetServiceByID(serviceID)
+}
+
+func (s *ServiceUseCase) GetByUserID(userID uuid.UUID) ([]entity.Service, error) {
+	isExists, err := s.userRepo.IsUserExistsByUserID(userID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if !isExists {
+		return nil, ErrUserNotExists
+	}
+
+	return s.serviceRepo.GetServicesByUserID(userID)
 }

@@ -1,6 +1,7 @@
 package gormrepo
 
 import (
+	"github.com/google/uuid"
 	"github.com/mmaxim2710/orders-service/internal/entity"
 	"github.com/mmaxim2710/orders-service/pkg/logger"
 	"gorm.io/gorm"
@@ -51,12 +52,22 @@ func (u *UserRepository) Delete(user *entity.User) (*entity.User, error) {
 	return nil, nil
 }
 
-func (u *UserRepository) IsUserExists(email string) (bool, error) {
-	u.l.Info("userRepo - IsUserExists: Checking if user with email %s is exists", email)
+func (u *UserRepository) IsUserExistsByEmail(email string) (bool, error) {
+	u.l.Info("userRepo - IsUserExistsByEmail: Checking if user with email %s is exists", email)
 	var count int64
 	err := u.db.Model(&entity.User{}).Where("email = ?", email).Count(&count).Error
 	if err != nil {
-		u.l.Error(err, "userRepo - IsUserExists")
+		u.l.Error(err, "userRepo - IsUserExistsByEmail")
+	}
+	return count > 0, err
+}
+
+func (u *UserRepository) IsUserExistsByUserID(userID uuid.UUID) (bool, error) {
+	u.l.Info("userRepo - IsUserExistsByUserID: Checking if user with id %v is exists", userID)
+	var count int64
+	err := u.db.Model(&entity.User{}).Where("id = ?", userID).Count(&count).Error
+	if err != nil {
+		u.l.Error(err, "userRepo - IsUserExistsByUserID")
 	}
 	return count > 0, err
 }

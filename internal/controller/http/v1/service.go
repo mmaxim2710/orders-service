@@ -21,11 +21,12 @@ func newServiceRoutes(handler fiber.Router, s usecase.Service, l logger.Interfac
 		l: l,
 	}
 
-	h := handler.Group("/service")
+	h := handler.Group("/services")
 	{
-		h.Post("/create", middleware.Protected(), r.createService)
-		h.Post("/update", middleware.Protected(), r.updateService)
+		h.Post("", middleware.Protected(), r.createService)
+		h.Patch("", middleware.Protected(), r.updateService)
 		h.Get("/:serviceID", middleware.Protected(), r.serviceByID)
+		h.Get("", middleware.Protected(), r.servicesByUserID)
 	}
 }
 
@@ -36,11 +37,20 @@ type (
 		Price       float64 `json:"price" validate:"required,min=0"`
 	}
 
-	createServiceResponse struct {
+	doUpdateServiceRequest struct {
+		ID          string  `json:"id" validate:"required"`
+		Title       string  `json:"title" validate:"required,min=3,max=128"`
+		Description string  `json:"description" validate:"required,min=1,max=1024"`
+		Price       float64 `json:"price" validate:"required,min=0"`
+		IsClosed    bool    `json:"is_closed" validate:"required"`
+	}
+
+	serviceResponse struct {
 		ID          uuid.UUID `json:"id"`
 		Title       string    `json:"title"`
 		Description string    `json:"description"`
 		Price       float64   `json:"price"`
+		IsClosed    bool      `json:"is_closed"`
 	}
 )
 
@@ -73,33 +83,16 @@ func (r *serviceRoutes) createService(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
 
-	response := createServiceResponse{
+	response := &serviceResponse{
 		ID:          service.ID,
 		Title:       service.Title,
 		Description: service.Description,
 		Price:       service.Price,
+		IsClosed:    service.IsClosed,
 	}
 
 	return successResponse(ctx, fiber.StatusOK, "Success create", response)
 }
-
-type (
-	doUpdateServiceRequest struct {
-		ID          string  `json:"id" validate:"required"`
-		Title       string  `json:"title" validate:"required,min=3,max=128"`
-		Description string  `json:"description" validate:"required,min=1,max=1024"`
-		Price       float64 `json:"price" validate:"required,min=0"`
-		IsClosed    bool    `json:"is_closed" validate:"required"`
-	}
-
-	updateServiceResponse struct {
-		ID          uuid.UUID `json:"id"`
-		Title       string    `json:"title"`
-		Description string    `json:"description"`
-		Price       float64   `json:"price"`
-		IsClosed    bool      `json:"is_closed"`
-	}
-)
 
 func (r *serviceRoutes) updateService(ctx *fiber.Ctx) error {
 	request := doUpdateServiceRequest{}
@@ -130,7 +123,7 @@ func (r *serviceRoutes) updateService(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
 
-	response := &updateServiceResponse{
+	response := &serviceResponse{
 		ID:          newUser.ID,
 		Title:       newUser.Title,
 		Description: newUser.Description,
@@ -139,16 +132,6 @@ func (r *serviceRoutes) updateService(ctx *fiber.Ctx) error {
 	}
 	return successResponse(ctx, fiber.StatusOK, "Successful update", response)
 }
-
-type (
-	serviceByIdResponse struct {
-		ID          uuid.UUID `json:"id"`
-		Title       string    `json:"title"`
-		Description string    `json:"description"`
-		Price       float64   `json:"price"`
-		IsClosed    bool      `json:"is_closed"`
-	}
-)
 
 func (r *serviceRoutes) serviceByID(ctx *fiber.Ctx) error {
 	serviceID := ctx.Params("serviceID")
@@ -168,7 +151,7 @@ func (r *serviceRoutes) serviceByID(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
 
-	response := &serviceByIdResponse{
+	response := &serviceResponse{
 		ID:          service.ID,
 		Title:       service.Title,
 		Description: service.Description,
@@ -176,4 +159,40 @@ func (r *serviceRoutes) serviceByID(ctx *fiber.Ctx) error {
 		IsClosed:    service.IsClosed,
 	}
 	return successResponse(ctx, fiber.StatusOK, "Successful get", response)
+}
+
+func (r *serviceRoutes) servicesByUserID(ctx *fiber.Ctx) error {
+	jwtData := ctx.Locals("jwt").(*jwt.Token)
+	claims := jwtData.Claims.(jwt.MapClaims)
+	id := claims["id"].(string)
+
+	userID, err := uuid.Parse(id)
+	if err != nil {
+		r.l.Error(err, "http - v1 - servicesByUserID")
+		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
+	}
+
+	services, err := r.s.GetByUserID(userID)
+	if err != nil {
+		r.l.Error(err, "http - v1 - servicesByUserID")
+		if err == usecase.ErrUserNotExists {
+			return errorResponse(ctx, fiber.StatusBadRequest, "User with provided id not found", err)
+		}
+		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
+	}
+
+	respServices := make([]serviceResponse, len(services), cap(services))
+
+	for i, v := range services {
+		temp := serviceResponse{
+			ID:          v.ID,
+			Title:       v.Title,
+			Description: v.Description,
+			Price:       v.Price,
+			IsClosed:    v.IsClosed,
+		}
+		respServices[i] = temp
+	}
+
+	return successResponse(ctx, fiber.StatusOK, "Successful get services", respServices)
 }

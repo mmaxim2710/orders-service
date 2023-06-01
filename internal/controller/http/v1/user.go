@@ -25,26 +25,42 @@ func newUserRoutes(handler fiber.Router, u usecase.User, l logger.Interface) {
 	{
 		h.Post("/register", r.registerUser)
 		h.Post("/login", r.login)
-		h.Post("/refresh", r.refresh)
-		h.Post("/update", middleware.Protected(), r.update)
+		h.Patch("/refresh", r.refresh)
+		h.Patch("/update", middleware.Protected(), r.update)
+		h.Get("/:userID", middleware.Protected())
 	}
 }
 
-type doRegisterUserRequest struct {
-	Login     string `json:"login" example:"testUser" validate:"required,min=3,max=255"`
-	Email     string `json:"email" example:"user@example.com" validate:"required,email"`
-	FirstName string `json:"first_name" example:"Ivan" validate:"required,min=2,max=128"`
-	LastName  string `json:"last_name" example:"Pupkin" validate:"required,min=2,max=128"`
-	Password  string `json:"password" example:"supersecretpassword" validate:"required,min=8,max=64"`
-}
+type (
+	doRegisterUserRequest struct {
+		Login     string `json:"login" example:"testUser" validate:"required,min=3,max=255"`
+		Email     string `json:"email" example:"user@example.com" validate:"required,email"`
+		FirstName string `json:"first_name" example:"Ivan" validate:"required,min=2,max=128"`
+		LastName  string `json:"last_name" example:"Pupkin" validate:"required,min=2,max=128"`
+		Password  string `json:"password" example:"supersecretpassword" validate:"required,min=8,max=64"`
+	}
+	doLoginRequest struct {
+		Email    string `json:"email" example:"user@example.com" validate:"required,email"`
+		Password string `json:"password" example:"supersecretpassword" validate:"required,min=8,max=64"`
+	}
+	doRefreshRequest struct {
+		UserID       string `json:"user_id" validate:"required,uuid"`
+		RefreshToken string `json:"refresh_token" validate:"required"`
+	}
+	doUpdateRequest struct {
+		Email     string `json:"email" validation:"required,email"`
+		FirstName string `json:"first_name" validation:"required,min=2,max=128"`
+		LastName  string `json:"last_name" validation:"required,min=2,max=128"`
+	}
 
-type registerUserResponse struct {
-	ID        uuid.UUID `json:"id,omitempty" example:"89db2ce2-f2c6-4d59-a014-8b68d19b783c"`
-	Login     string    `json:"login,omitempty" example:"testUser"`
-	Email     string    `json:"email,omitempty" example:"user@example.com"`
-	FirstName string    `json:"first_name,omitempty" example:"Ivan"`
-	LastName  string    `json:"last_name,omitempty" example:"Pupkin"`
-}
+	userResponse struct {
+		ID        uuid.UUID `json:"id" example:"89db2ce2-f2c6-4d59-a014-8b68d19b783c"`
+		Login     string    `json:"login" example:"testUser"`
+		Email     string    `json:"email" example:"user@example.com"`
+		FirstName string    `json:"first_name" example:"Ivan"`
+		LastName  string    `json:"last_name" example:"Pupkin"`
+	}
+)
 
 // @Summary     Register user
 // @Description Register a new user with passed params
@@ -80,7 +96,7 @@ func (r *userRoutes) registerUser(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Error while register user", err)
 	}
 
-	response := &registerUserResponse{
+	response := &userResponse{
 		ID:        user.ID,
 		Login:     user.Login,
 		Email:     user.Email,
@@ -89,11 +105,6 @@ func (r *userRoutes) registerUser(ctx *fiber.Ctx) error {
 	}
 
 	return successResponse(ctx, fiber.StatusOK, "Successfully registered user", response)
-}
-
-type doLoginRequest struct {
-	Email    string `json:"email" example:"user@example.com" validate:"required,email"`
-	Password string `json:"password" example:"supersecretpassword" validate:"required,min=8,max=64"`
 }
 
 func (r *userRoutes) login(ctx *fiber.Ctx) error {
@@ -119,11 +130,6 @@ func (r *userRoutes) login(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Login success", result)
 }
 
-type doRefreshRequest struct {
-	UserID       string `json:"user_id" validate:"required,uuid"`
-	RefreshToken string `json:"refresh_token" validate:"required"`
-}
-
 func (r *userRoutes) refresh(ctx *fiber.Ctx) error {
 	request := doRefreshRequest{}
 	err := ctx.BodyParser(&request)
@@ -144,19 +150,6 @@ func (r *userRoutes) refresh(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
 	return successResponse(ctx, fiber.StatusOK, "Successful refresh", result)
-}
-
-type doUpdateRequest struct {
-	Email     string `json:"email" validation:"required,email"`
-	FirstName string `json:"first_name" validation:"required,min=2,max=128"`
-	LastName  string `json:"last_name" validation:"required,min=2,max=128"`
-}
-
-type updateResponse struct {
-	Login     string `json:"login"`
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
 }
 
 func (r *userRoutes) update(ctx *fiber.Ctx) error {
@@ -192,7 +185,8 @@ func (r *userRoutes) update(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
 
-	response := &updateResponse{
+	response := &userResponse{
+		ID:        newUser.ID,
 		Login:     newUser.Login,
 		Email:     newUser.Email,
 		FirstName: newUser.FirstName,

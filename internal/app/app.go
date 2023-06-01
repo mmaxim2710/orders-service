@@ -30,7 +30,7 @@ func Run(cfg *config.Config) {
 
 	// Use case
 	userUseCase := usecase.NewUserUseCase(userRepo, tokenRepo)
-	serviceUseCase := usecase.NewServiceUseCase(serviceRepo)
+	serviceUseCase := usecase.NewServiceUseCase(serviceRepo, userRepo)
 
 	// Validator
 	validations.InitValidator()

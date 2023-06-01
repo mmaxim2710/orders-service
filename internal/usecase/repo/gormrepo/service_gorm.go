@@ -63,6 +63,10 @@ func (s *ServiceRepository) GetServiceByID(serviceID uuid.UUID) (*entity.Service
 	return service, err
 }
 
-func (s *ServiceRepository) GetServicesByUserID(userID uuid.UUID) (*entity.Service, error) {
-	return nil, nil
+func (s *ServiceRepository) GetServicesByUserID(userID uuid.UUID) ([]entity.Service, error) {
+	var services []entity.Service
+	err := s.db.Model(&entity.Service{}).
+		Where("user_id = ?", userID).
+		Find(&services).Error
+	return services, err
 }
