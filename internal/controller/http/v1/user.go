@@ -28,6 +28,7 @@ func newUserRoutes(handler fiber.Router, u usecase.User, l logger.Interface) {
 		h.Patch("/refresh", r.refresh)
 		h.Patch("/update", middleware.Protected(), r.update)
 		h.Get("/:userID", middleware.Protected())
+		h.Delete("/:userID", middleware.Protected(), r.delete)
 	}
 }
 
@@ -44,7 +45,7 @@ type (
 		Password string `json:"password" example:"supersecretpassword" validate:"required,min=8,max=64"`
 	}
 	doRefreshRequest struct {
-		UserID       string `json:"user_id" validate:"required,uuid"`
+		UserID       string `json:"user_id" validate:"required,uuid4"`
 		RefreshToken string `json:"refresh_token" validate:"required"`
 	}
 	doUpdateRequest struct {
@@ -193,4 +194,43 @@ func (r *userRoutes) update(ctx *fiber.Ctx) error {
 		LastName:  newUser.LastName,
 	}
 	return successResponse(ctx, fiber.StatusOK, "Successful update", response)
+}
+
+func (r *userRoutes) delete(ctx *fiber.Ctx) error {
+	userID := ctx.Params("userID")
+	jwtData := ctx.Locals("jwt").(*jwt.Token)
+	claims := jwtData.Claims.(jwt.MapClaims)
+	id := claims["id"].(string)
+
+	if userID != id {
+		return errorResponse(ctx, fiber.StatusBadRequest, "Trying to delete user that is not associated wit token", ErrEntitiesMismatch)
+	}
+
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		r.l.Error(err, "http - v1 - user - delete")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid uuid in request params", err)
+	}
+
+	delUser, err := r.u.Delete(userUUID)
+	if err != nil {
+		r.l.Error(err, "http - v1 - user - delete")
+		if err == usecase.ErrUserNotExists {
+			return errorResponse(ctx, fiber.StatusBadRequest, "user associated with provided token not exists", err)
+		}
+		if err == usecase.ErrUserHasNonClosedServices {
+			return errorResponse(ctx, fiber.StatusBadRequest, "user has non closed services", err)
+		}
+		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
+	}
+
+	response := userResponse{
+		ID:        delUser.ID,
+		Login:     delUser.Login,
+		Email:     delUser.Email,
+		FirstName: delUser.FirstName,
+		LastName:  delUser.LastName,
+	}
+
+	return successResponse(ctx, fiber.StatusOK, "Successful delete", response)
 }

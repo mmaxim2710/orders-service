@@ -8,14 +8,16 @@ import (
 )
 
 type UserUseCase struct {
-	userRepo  UserRepo
-	tokenRepo TokenRepo
+	userRepo    UserRepo
+	tokenRepo   TokenRepo
+	serviceRepo ServiceRepo
 }
 
-func NewUserUseCase(u UserRepo, t TokenRepo) *UserUseCase {
+func NewUserUseCase(u UserRepo, t TokenRepo, s ServiceRepo) *UserUseCase {
 	return &UserUseCase{
-		userRepo:  u,
-		tokenRepo: t,
+		userRepo:    u,
+		tokenRepo:   t,
+		serviceRepo: s,
 	}
 }
 
@@ -153,4 +155,34 @@ func (u *UserUseCase) Update(userID uuid.UUID, email string, firstName string, l
 	}
 
 	return updatedUser, nil
+}
+
+func (u *UserUseCase) Delete(userID uuid.UUID) (*entity.User, error) {
+	isExists, err := u.userRepo.IsUserExistsByUserID(userID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if !isExists {
+		return nil, ErrUserNotExists
+	}
+
+	_, count, err := u.serviceRepo.GetNonClosedServices(userID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if count != 0 {
+		return nil, ErrUserHasNonClosedServices
+	}
+
+	err = u.tokenRepo.DeleteByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	delUser, err := u.userRepo.Delete(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return delUser, nil
 }

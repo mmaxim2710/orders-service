@@ -75,3 +75,11 @@ func (s *ServiceRepository) GetServicesByUserID(userID uuid.UUID) ([]entity.Serv
 		Find(&services).Error
 	return services, err
 }
+
+func (s *ServiceRepository) GetNonClosedServices(userID uuid.UUID) ([]entity.Service, int64, error) {
+	var services []entity.Service
+	result := s.db.Model(&entity.Service{}).
+		Where("user_id = ? AND is_closed = ?", userID, false).
+		Find(&services)
+	return services, result.RowsAffected, result.Error
+}

@@ -27,14 +27,14 @@ func (u *UserRepository) Create(user *entity.User) (*entity.User, error) {
 func (u *UserRepository) FindByID(id string) (*entity.User, error) {
 	u.l.Info("userRepo - FindByID: Finding user by id %s", id)
 	var user entity.User
-	err := u.db.Where("id = ?", id).First(&user).Error
+	err := u.db.Limit(1).Where("id = ?", id).First(&user).Error
 	return &user, err
 }
 
 func (u *UserRepository) FindByEmail(email string) (*entity.User, error) {
 	u.l.Info("userRepo - FindByEmail: Finding user by email %s", email)
 	var user entity.User
-	err := u.db.Where("email = ?", email).First(&user).Error
+	err := u.db.Limit(1).Where("email = ?", email).First(&user).Error
 	return &user, err
 }
 
@@ -48,8 +48,13 @@ func (u *UserRepository) Update(user *entity.User) (*entity.User, error) {
 	return &newUser, err
 }
 
-func (u *UserRepository) Delete(user *entity.User) (*entity.User, error) {
-	return nil, nil
+func (u *UserRepository) Delete(userID uuid.UUID) (*entity.User, error) {
+	var delUser entity.User
+	err := u.db.Model(&entity.User{}).
+		Where("id = ?", userID).
+		First(&delUser).
+		Delete(&entity.User{}).Error
+	return &delUser, err
 }
 
 func (u *UserRepository) IsUserExistsByEmail(email string) (bool, error) {

@@ -39,7 +39,7 @@ type (
 	}
 
 	doUpdateServiceRequest struct {
-		ID          string  `json:"id" validate:"required"`
+		ID          string  `json:"id" validate:"required,uuid4"`
 		Title       string  `json:"title" validate:"required,min=3,max=128"`
 		Description string  `json:"description" validate:"required,min=1,max=1024"`
 		Price       float64 `json:"price" validate:"required,min=0"`
@@ -47,7 +47,7 @@ type (
 	}
 
 	doDeleteServiceRequest struct {
-		ID string `json:"id" validate:"required"`
+		ID string `json:"id" validate:"required,uuid4"`
 	}
 
 	serviceResponse struct {

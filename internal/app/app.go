@@ -29,7 +29,7 @@ func Run(cfg *config.Config) {
 	serviceRepo := gormrepo.NewServiceRepo(db, l)
 
 	// Use case
-	userUseCase := usecase.NewUserUseCase(userRepo, tokenRepo)
+	userUseCase := usecase.NewUserUseCase(userRepo, tokenRepo, serviceRepo)
 	serviceUseCase := usecase.NewServiceUseCase(serviceRepo, userRepo)
 
 	// Validator

@@ -11,6 +11,7 @@ type (
 		Login(email string, password string) (map[string]interface{}, error)
 		Refresh(token string, userID string) (map[string]interface{}, error)
 		Update(userID uuid.UUID, email string, firstName string, lastName string) (*entity.User, error)
+		Delete(userID uuid.UUID) (*entity.User, error)
 	}
 
 	UserRepo interface {
@@ -18,7 +19,7 @@ type (
 		FindByID(id string) (*entity.User, error)
 		FindByEmail(email string) (*entity.User, error)
 		Update(user *entity.User) (*entity.User, error)
-		Delete(user *entity.User) (*entity.User, error)
+		Delete(userID uuid.UUID) (*entity.User, error)
 		IsUserExistsByEmail(email string) (bool, error)
 		IsUserExistsByUserID(userID uuid.UUID) (bool, error)
 	}
@@ -29,6 +30,7 @@ type (
 		Create(userID uuid.UUID, token string) error
 		GetActiveToken(userID uuid.UUID) (entity.Token, error)
 		Revoke(userID uuid.UUID) error
+		DeleteByUserID(userID uuid.UUID) error
 	}
 )
 
@@ -48,5 +50,6 @@ type (
 		IsServiceExists(serviceID uuid.UUID) (bool, error)
 		GetServiceByID(userID uuid.UUID) (*entity.Service, error)
 		GetServicesByUserID(userID uuid.UUID) ([]entity.Service, error)
+		GetNonClosedServices(userID uuid.UUID) ([]entity.Service, int64, error)
 	}
 )
