@@ -18,5 +18,9 @@ func Automigrate(db *gorm.DB) error {
 		return err
 	}
 
+	if err := db.AutoMigrate(&entity.Order{}); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -11,14 +11,14 @@ import (
 )
 
 type serviceRoutes struct {
-	s usecase.Service
-	l logger.Interface
+	service usecase.Service
+	l       logger.Interface
 }
 
 func newServiceRoutes(handler fiber.Router, s usecase.Service, l logger.Interface) {
 	r := &serviceRoutes{
-		s: s,
-		l: l,
+		service: s,
+		l:       l,
 	}
 
 	h := handler.Group("/services", middleware.Protected())
@@ -83,7 +83,7 @@ func (r *serviceRoutes) createService(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
 
-	service, err := r.s.Create(userID, request.Title, request.Description, request.Price)
+	service, err := r.service.Create(userID, request.Title, request.Description, request.Price)
 	if err != nil {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
@@ -119,7 +119,7 @@ func (r *serviceRoutes) updateService(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid format of uuid", err)
 	}
 
-	newUser, err := r.s.Update(serviceID, request.Title, request.Description, request.Price, request.IsClosed)
+	newUser, err := r.service.Update(serviceID, request.Title, request.Description, request.Price, request.IsClosed)
 	if err != nil {
 		r.l.Error("Path: http - v1 - updateService. Error: %w", err)
 		if err == usecase.ErrServiceNotExists {
@@ -147,7 +147,7 @@ func (r *serviceRoutes) serviceByID(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid format of uuid", err)
 	}
 
-	service, err := r.s.GetByID(serviceUUID)
+	service, err := r.service.GetByID(serviceUUID)
 	if err != nil {
 		r.l.Error(err, "http - v1 - serviceByID")
 		if err == usecase.ErrServiceNotExists {
@@ -177,7 +177,7 @@ func (r *serviceRoutes) servicesByUserID(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
 	}
 
-	services, err := r.s.GetByUserID(userID)
+	services, err := r.service.GetByUserID(userID)
 	if err != nil {
 		r.l.Error(err, "http - v1 - servicesByUserID")
 		if err == usecase.ErrUserNotExists {
@@ -222,7 +222,7 @@ func (r *serviceRoutes) deleteService(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid uuid", err)
 	}
 
-	delService, err := r.s.Delete(serviceID)
+	delService, err := r.service.Delete(serviceID)
 	if err != nil {
 		r.l.Error(err, "http - v1 - service - delete")
 		if err == usecase.ErrServiceNotExists {

@@ -27,10 +27,12 @@ func Run(cfg *config.Config) {
 	userRepo := gormrepo.NewUserRepository(db, l)
 	tokenRepo := gormrepo.NewTokenRepository(db, l)
 	serviceRepo := gormrepo.NewServiceRepo(db, l)
+	orderRepo := gormrepo.NewOrderRepo(db, l)
 
 	// Use case
 	userUseCase := usecase.NewUserUseCase(userRepo, tokenRepo, serviceRepo)
 	serviceUseCase := usecase.NewServiceUseCase(serviceRepo, userRepo)
+	orderUseCase := usecase.NewOrderUseCase(serviceRepo, orderRepo)
 
 	// Validator
 	validations.InitValidator()
@@ -40,7 +42,7 @@ func Run(cfg *config.Config) {
 
 	// HTTP server
 	handler := fiber.New()
-	v1.SetupRouter(handler, userUseCase, serviceUseCase, l)
+	v1.SetupRouter(handler, userUseCase, serviceUseCase, orderUseCase, l)
 	err = handler.Listen(cfg.Server.Port)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - handler.Lister: %w", err))
