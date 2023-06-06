@@ -55,3 +55,15 @@ func (u *OrderUseCase) Create(serviceIDs []uuid.UUID) ([]*entity.Order, error) {
 
 	return orders, nil
 }
+
+func (u *OrderUseCase) GetByOrderID(orderID uuid.UUID) ([]entity.Order, error) {
+	isExists, err := u.orderRepo.IsOrderExists(orderID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if !isExists {
+		return nil, ErrOrderNotExists
+	}
+
+	return u.orderRepo.GetByOrderID(orderID)
+}

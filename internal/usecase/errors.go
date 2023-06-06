@@ -8,6 +8,7 @@ var (
 	ErrPasswordMismatch         = errors.New("password mismatch")
 	ErrInvalidToken             = errors.New("invalid token")
 	ErrServiceNotExists         = errors.New("service with provided params not exists")
+	ErrOrderNotExists           = errors.New("order not exists")
 	ErrUserHasNonClosedServices = errors.New("user has non closed services")
 	ErrEmptySlice               = errors.New("empty slice")
 )

@@ -57,9 +57,12 @@ type (
 type (
 	Order interface {
 		Create(serviceIDs []uuid.UUID) ([]*entity.Order, error)
+		GetByOrderID(orderID uuid.UUID) ([]entity.Order, error)
 	}
 
 	OrderRepo interface {
 		Create(order *entity.Order) (*entity.Order, error)
+		GetByOrderID(orderID uuid.UUID) ([]entity.Order, error)
+		IsOrderExists(orderID uuid.UUID) (bool, error)
 	}
 )

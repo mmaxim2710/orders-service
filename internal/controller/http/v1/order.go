@@ -23,6 +23,7 @@ func newOrderRoutes(handler fiber.Router, order usecase.Order, logger logger.Int
 	h := handler.Group("/orders")
 	{
 		h.Post("", middleware.Protected(), r.create)
+		h.Get("/:orderID", middleware.Protected(), r.getByID)
 	}
 }
 
@@ -90,4 +91,35 @@ func (r *orderRoutes) create(ctx *fiber.Ctx) error {
 	}
 
 	return successResponse(ctx, fiber.StatusOK, "Success create order", response)
+}
+
+func (r *orderRoutes) getByID(ctx *fiber.Ctx) error {
+	strID := ctx.Params("orderID")
+
+	orderID, err := uuid.Parse(strID)
+	if err != nil {
+		r.logger.Error(err, "http - v1 - order - getByID")
+		return errorResponse(ctx, fiber.StatusBadRequest, "Invalid order uuid", err)
+	}
+
+	order, err := r.order.GetByOrderID(orderID)
+	if err != nil {
+		r.logger.Error(err, "http - v1 - order - getByID")
+		if err == usecase.ErrOrderNotExists {
+			return errorResponse(ctx, fiber.StatusBadRequest, "Orders with provided id not found", err)
+		}
+		return errorResponse(ctx, fiber.StatusInternalServerError, "Internal server error", err)
+	}
+
+	response := orderResponse{}
+	response.Services = make([]serviceEntity, 0, len(order))
+	response.OrderID = order[0].OrderID
+	for _, v := range order {
+		response.Services = append(response.Services, serviceEntity{
+			ServiceID: v.ServiceID,
+			Status:    v.Status,
+		})
+	}
+
+	return successResponse(ctx, fiber.StatusOK, "Successful get", response)
 }
