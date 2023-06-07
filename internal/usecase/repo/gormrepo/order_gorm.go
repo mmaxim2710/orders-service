@@ -20,6 +20,8 @@ func NewOrderRepo(db *gorm.DB, l logger.Interface) *OrderRepo {
 }
 
 func (r *OrderRepo) Create(order *entity.Order) (*entity.Order, error) {
+	r.l.Info("orderRepo - Create: Creating order with values: serviceID=%s, status=%s",
+		order.ServiceID.String(), order.Status)
 	newOrder := &entity.Order{}
 	err := r.db.Model(&entity.Order{}).
 		Create(order).
@@ -28,6 +30,7 @@ func (r *OrderRepo) Create(order *entity.Order) (*entity.Order, error) {
 }
 
 func (r *OrderRepo) GetByOrderID(orderID uuid.UUID) ([]entity.Order, error) {
+	r.l.Info("orderRepo - GetByOrderID: Getting order by id %s", orderID.String())
 	var orders []entity.Order
 	err := r.db.Model(&entity.Order{}).
 		Where("order_id = ?", orderID).
@@ -36,6 +39,7 @@ func (r *OrderRepo) GetByOrderID(orderID uuid.UUID) ([]entity.Order, error) {
 }
 
 func (r *OrderRepo) IsOrderExists(orderID uuid.UUID) (bool, error) {
+	r.l.Info("orderRepo - IsOrderExists: Checking if order with id %s exists", orderID.String())
 	var count int64
 	err := r.db.Model(&entity.Order{}).Where("order_id = ?", orderID).Count(&count).Error
 	return count > 0, err

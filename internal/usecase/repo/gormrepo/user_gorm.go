@@ -49,6 +49,7 @@ func (u *UserRepository) Update(user *entity.User) (*entity.User, error) {
 }
 
 func (u *UserRepository) Delete(userID uuid.UUID) (*entity.User, error) {
+	u.l.Info("userRepo - Delete: Deleting user with id %s", userID.String())
 	var delUser entity.User
 	err := u.db.Model(&entity.User{}).
 		Where("id = ?", userID).

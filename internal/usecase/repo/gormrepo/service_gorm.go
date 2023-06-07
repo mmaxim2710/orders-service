@@ -41,6 +41,7 @@ func (s *ServiceRepository) Update(service *entity.Service) (*entity.Service, er
 }
 
 func (s *ServiceRepository) Delete(serviceID uuid.UUID) (*entity.Service, error) {
+	s.l.Info("serviceRepo - Delete: Deleting service with id %s", serviceID.String())
 	var delService entity.Service
 	err := s.db.Model(&entity.Service{}).
 		Where("id = ?", serviceID).
@@ -69,6 +70,7 @@ func (s *ServiceRepository) GetServiceByID(serviceID uuid.UUID) (*entity.Service
 }
 
 func (s *ServiceRepository) GetServicesByUserID(userID uuid.UUID) ([]entity.Service, error) {
+	s.l.Info("serviceRepo - GetServicesByUserID: Getting services by userID %s", userID.String())
 	var services []entity.Service
 	err := s.db.Model(&entity.Service{}).
 		Where("user_id = ?", userID).
@@ -77,6 +79,7 @@ func (s *ServiceRepository) GetServicesByUserID(userID uuid.UUID) ([]entity.Serv
 }
 
 func (s *ServiceRepository) GetNonClosedServices(userID uuid.UUID) ([]entity.Service, int64, error) {
+	s.l.Info("serviceRepo - GetNonClosedServices: Getting non closed services for user %s", userID.String())
 	var services []entity.Service
 	result := s.db.Model(&entity.Service{}).
 		Where("user_id = ? AND is_closed = ?", userID, false).
