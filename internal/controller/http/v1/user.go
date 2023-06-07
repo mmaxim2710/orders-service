@@ -27,7 +27,6 @@ func newUserRoutes(handler fiber.Router, u usecase.User, l logger.Interface) {
 		h.Post("/login", r.login)
 		h.Patch("/refresh", r.refresh)
 		h.Patch("/update", middleware.Protected(), r.update)
-		h.Get("/:userID", middleware.Protected())
 		h.Delete("/:userID", middleware.Protected(), r.delete)
 	}
 }
@@ -45,13 +44,13 @@ type (
 		Password string `json:"password" example:"supersecretpassword" validate:"required,min=8,max=64"`
 	}
 	doRefreshRequest struct {
-		UserID       string `json:"user_id" validate:"required,uuid4"`
-		RefreshToken string `json:"refresh_token" validate:"required"`
+		UserID       string `json:"user_id" example:"89db2ce2-f2c6-4d59-a014-8b68d19b783c" validate:"required,uuid4"`
+		RefreshToken string `json:"refresh_token" example:"fsd7-1fsdfs23SDFfsdf3" validate:"required"`
 	}
 	doUpdateRequest struct {
-		Email     string `json:"email" validation:"required,email"`
-		FirstName string `json:"first_name" validation:"required,min=2,max=128"`
-		LastName  string `json:"last_name" validation:"required,min=2,max=128"`
+		Email     string `json:"email" example:"user@example.com" validation:"required,email"`
+		FirstName string `json:"first_name" example:"Vasya" validation:"required,min=2,max=128"`
+		LastName  string `json:"last_name" example:"Pupkin" validation:"required,min=2,max=128"`
 	}
 
 	userResponse struct {
@@ -66,11 +65,11 @@ type (
 // @Summary     Register user
 // @Description Register a new user with passed params
 // @ID          register-user
-// @Tags  	    users
+// @Tags  	    user
 // @Accept      json
 // @Produce     json
 // @Param       request body doRegisterUserRequest true "Set up user"
-// @Success     200 {object} registerUserResponse
+// @Success     200 {object} Response{data=userResponse}
 // @Failure     400 {object} Response
 // @Failure     500 {object} Response
 // @Router      /user/register [post]
@@ -108,6 +107,17 @@ func (r *userRoutes) registerUser(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Successfully registered user", response)
 }
 
+// @Summary     Login
+// @Description Login to user account
+// @ID          login
+// @Tags  	    user
+// @Accept      json
+// @Produce     json
+// @Param       request body doLoginRequest true "JWT token, refresh token"
+// @Success     200 {object} Response
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /user/login [post]
 func (r *userRoutes) login(ctx *fiber.Ctx) error {
 	request := doLoginRequest{}
 	err := ctx.BodyParser(&request)
@@ -131,6 +141,17 @@ func (r *userRoutes) login(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Login success", result)
 }
 
+// @Summary     Refresh
+// @Description Refresh JWT token by refresh token
+// @ID          refresh
+// @Tags  	    user
+// @Accept      json
+// @Produce     json
+// @Param       request body doRefreshRequest true "New JWT token"
+// @Success     200 {object} Response
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /user/refresh [patch]
 func (r *userRoutes) refresh(ctx *fiber.Ctx) error {
 	request := doRefreshRequest{}
 	err := ctx.BodyParser(&request)
@@ -153,6 +174,17 @@ func (r *userRoutes) refresh(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Successful refresh", result)
 }
 
+// @Summary     Update
+// @Description Update users info
+// @ID          update
+// @Tags  	    user
+// @Accept      json
+// @Produce     json
+// @Param       request body doUpdateRequest true "User data"
+// @Success     200 {object} Response{data=userResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /user/update [patch]
 func (r *userRoutes) update(ctx *fiber.Ctx) error {
 	request := doUpdateRequest{}
 	err := ctx.BodyParser(&request)
@@ -196,6 +228,17 @@ func (r *userRoutes) update(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Successful update", response)
 }
 
+// @Summary     Delete
+// @Description Delete user
+// @ID          delete
+// @Tags  	    user
+// @Accept      */*
+// @Produce     json
+// @Param       userID path string true "User data"
+// @Success     200 {object} Response{data=userResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /user/{userID} [delete]
 func (r *userRoutes) delete(ctx *fiber.Ctx) error {
 	userID := ctx.Params("userID")
 	jwtData := ctx.Locals("jwt").(*jwt.Token)

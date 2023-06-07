@@ -43,6 +43,17 @@ type (
 	}
 )
 
+// @Summary     Create Order
+// @Description Create new order
+// @ID          create
+// @Tags  	    order
+// @Accept      json
+// @Produce     json
+// @Param       request body doCreateOrderRequest true "List of services for order"
+// @Success     200 {object} Response{data=orderResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /orders [post]
 func (r *orderRoutes) create(ctx *fiber.Ctx) error {
 	request := doCreateOrderRequest{}
 	err := ctx.BodyParser(&request)
@@ -93,6 +104,17 @@ func (r *orderRoutes) create(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Success create order", response)
 }
 
+// @Summary     Get Order by id
+// @Description Get existing order by UUID
+// @ID          getByID
+// @Tags  	    order
+// @Accept      */*
+// @Produce     json
+// @Param       orderID path string true "Order data"
+// @Success     200 {object} Response{data=orderResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /orders/{orderID} [get]
 func (r *orderRoutes) getByID(ctx *fiber.Ctx) error {
 	strID := ctx.Params("orderID")
 

@@ -59,6 +59,17 @@ type (
 	}
 )
 
+// @Summary     Create Service
+// @Description Create new service
+// @ID          createService
+// @Tags  	    service
+// @Accept      json
+// @Produce     json
+// @Param       request body doCreateServiceRequest true "New service values"
+// @Success     200 {object} Response{data=serviceResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /services [post]
 func (r *serviceRoutes) createService(ctx *fiber.Ctx) error {
 	request := doCreateServiceRequest{}
 	err := ctx.BodyParser(&request)
@@ -99,6 +110,17 @@ func (r *serviceRoutes) createService(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Success create", response)
 }
 
+// @Summary     Update Service
+// @Description Update existing service with new values
+// @ID          updateService
+// @Tags  	    service
+// @Accept      json
+// @Produce     json
+// @Param       request body doUpdateServiceRequest true "New values of service"
+// @Success     200 {object} Response{data=serviceResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /services [patch]
 func (r *serviceRoutes) updateService(ctx *fiber.Ctx) error {
 	request := doUpdateServiceRequest{}
 	err := ctx.BodyParser(&request)
@@ -138,6 +160,17 @@ func (r *serviceRoutes) updateService(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Successful update", response)
 }
 
+// @Summary     Service by id
+// @Description Get service by UUID
+// @ID          serviceByID
+// @Tags  	    service
+// @Accept      */*
+// @Produce     json
+// @Param       serviceID path string true "Service data"
+// @Success     200 {object} Response{data=serviceResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /services/{serviceID} [get]
 func (r *serviceRoutes) serviceByID(ctx *fiber.Ctx) error {
 	serviceID := ctx.Params("serviceID")
 
@@ -166,6 +199,17 @@ func (r *serviceRoutes) serviceByID(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Successful get", response)
 }
 
+// @Summary     Services by user id
+// @Description Get services by user UUID
+// @ID          servicesByUserID
+// @Tags  	    service
+// @Accept      json
+// @Produce     json
+// @Param       serviceID path string true "Services data"
+// @Success     200 {object} Response{data=[]serviceResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /services/{serviceID} [get]
 func (r *serviceRoutes) servicesByUserID(ctx *fiber.Ctx) error {
 	jwtData := ctx.Locals("jwt").(*jwt.Token)
 	claims := jwtData.Claims.(jwt.MapClaims)
@@ -202,6 +246,17 @@ func (r *serviceRoutes) servicesByUserID(ctx *fiber.Ctx) error {
 	return successResponse(ctx, fiber.StatusOK, "Successful get services", respServices)
 }
 
+// @Summary     Delete Service
+// @Description Delete existing service
+// @ID          deleteService
+// @Tags  	    service
+// @Accept      json
+// @Produce     json
+// @Param       request body doDeleteServiceRequest true "Values of deleted service"
+// @Success     200 {object} Response{data=serviceResponse}
+// @Failure     400 {object} Response
+// @Failure     500 {object} Response
+// @Router      /services [delete]
 func (r *serviceRoutes) deleteService(ctx *fiber.Ctx) error {
 	request := doDeleteServiceRequest{}
 	err := ctx.BodyParser(&request)
