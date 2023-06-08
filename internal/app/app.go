@@ -6,10 +6,10 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/mmaxim2710/orders-service/config"
 	v1 "github.com/mmaxim2710/orders-service/internal/controller/http/v1"
+	"github.com/mmaxim2710/orders-service/internal/pkg/database"
 	"github.com/mmaxim2710/orders-service/internal/pkg/utils"
 	"github.com/mmaxim2710/orders-service/internal/usecase"
 	"github.com/mmaxim2710/orders-service/internal/usecase/repo/gormrepo"
-	"github.com/mmaxim2710/orders-service/pkg/database"
 	"github.com/mmaxim2710/orders-service/pkg/logger"
 	"github.com/mmaxim2710/orders-service/pkg/validations"
 )
